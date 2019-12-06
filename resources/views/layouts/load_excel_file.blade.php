@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="{{ app()->getLocale() }}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Photo Management</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+
+    <!-- Styles -->
+    <style>
+        body {
+            height: 100vh;
+        }
+    </style>
+</head>
+<header>
+    {{--@if(isset($result2))--}}
+    {{--@foreach($result2 as $result)--}}
+    {{--<ul>--}}
+    {{--{{$result->name}}--}}
+    {{--</ul>--}}
+    {{--@endforeach--}}
+    {{--@endif--}}
+
+    @if (session('status'))
+        <div class="alert alert-success">
+            {{ session('status') }}
+        </div>
+
+    @endif
+</header>
+<body>
+<div class="d-flex justify-content-center align-items-center" style="height: 100%">
+    @yield('content')
+</div>
+</body>
+</html>
