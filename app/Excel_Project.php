@@ -25,4 +25,10 @@ class Excel_Project extends Model
     public static function firstOrCreate($i)
     {
     }
+
+    public  function Count_Records()
+    {
+        $count = Excel_Project::all()->count();
+        return $count;
+    }
 }

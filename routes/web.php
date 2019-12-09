@@ -16,5 +16,6 @@
 //});
 
 
-Route::match(['get', 'post'], '/', ['uses' => 'ResourceController@index'])->name('index');
-Route::match(['get', 'post'], '/2', ['uses' => 'ResourceController@store'])->name('index2');
+Route::match(['get', 'post'], '/', ['uses' => 'File_ExcelController@execute'])->name('index');
+//Route::match(['get', 'post'], '/', ['uses' => 'ResourceController@index'])->name('index');
+//Route::match(['get', 'post'], '/2', ['uses' => 'ResourceController@store'])->name('index2');

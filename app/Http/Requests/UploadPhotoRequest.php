@@ -24,7 +24,7 @@ class UploadPhotoRequest extends FormRequest
     public function rules()
     {
         return [
-            'name_file' => 'required|file|max:10000,mimes:text:csv'
+            'name_file' => 'required|file|max:10000,mimes:csv'
         ];
     }
     public function messages()

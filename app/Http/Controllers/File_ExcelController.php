@@ -6,6 +6,7 @@ use App\Excel_Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 use PHPExcel_Reader_CSV;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -24,18 +25,43 @@ class File_ExcelController extends Controller
 
             $input = $request->except('_token');
 
-            $path = public_path().'/files_csv';
-           $file = $request->file('name_file');
+
+
+            $file = $request->file('name_file');
+//            dd($_FILES);
+            $rule = [//mimes:xlsx,xls,csv|
+                'name_file' => 'required|file|
+                mimetypes:text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+                application/vnd.ms-excel|min:1|max:100000'
+            ];
+
+            $messages = [
+//                'required'  => "Поле :attribute обов'язкове  до заповнення",
+                'file' => 'Повинно бути файлом',
+                //'mimes' => 'Розширення повинно бути - xlsx,xls,csv',
+                //'size' =>'Розмір повинен бути не більше 10000'
+            ];
+            $validator = Validator::make([
+                'name_file' => $file
+            ],$rule, $messages);
+            if ($validator->fails()){
+                return redirect()->route('index')->withErrors($validator);
+            }
+
+//            dd('ok');
+
+
+           $path = public_path().'/file_csv';
+
            $file_2 = public_path().'/original_file_csv';
 
-           $file_name = time().'-'.$file->getClientOriginalName();//dd($file_name);
-           $file_type = time().'-'.$file->getClientMimeType();//dd($file_type);
+           $file_name = $file->getClientOriginalName();//dd($file_name);
+           $file_type = $file->getClientMimeType();//dd($file_type);
+           $file->move($path,$file_name);
+           $file_folder = $file_name;
 
-//            $request->validate([
-//                'name_file' => ['required|', new Uppercase],
-//            ]);
 
-           //$file->move($path,$file_name);
+
 
 
 //            $row = 1;
@@ -100,29 +126,37 @@ class File_ExcelController extends Controller
 //            }
 
 
-            $dd = $this->getLines($file);//dd($dd);
-            $date = [];
-            for ($i = 0; $i < count($dd); $i ++) {//dd($dd);
-                //Excel_Project::firstOrCreate($dd[$i]);
-//                foreach ($dd[$i] as $key => $value){//dd($value);
-//                    yield $value;
-                    $date[] = [
-                        'Heading_1' =>$dd[$i]['Heading_1'],
-                        'Heading_2' =>$dd[$i]['Heading_2'],
-                        'Category'=>$dd[$i]['Category'],
-                        'Manufacturer' => $dd[$i]['Manufacturer'],
-                        'Name' =>$dd[$i]['Name'],
-                        'Model_number' =>$dd[$i]['Model_number'],
-                        'Text' =>$dd[$i]['Text'],
-                        'Price' => $dd[$i]['Price'],
-                        'Guarantee' =>$dd[$i]['Guarantee'],
-                        'Availability' =>$dd[$i]['Availability'],
-                        'Other' =>$dd[$i]['']];
-
-
-            //}
-            DB::table('excel_project')->insert($date);
-            }dd($date);
+            $dd = $this->getLines($file_folder);
+            if ($dd){
+                $count_records = Excel_Project::all()->count();
+                //$count_records = new Excel_Project();
+                //$count_records->Count_Records();
+                //$count = count($dd);
+                return redirect()->route('index')->with('status', "Всього успішно відправлено записів: $count_records! ");
+            }
+            //dd($dd);
+//            $date = [];
+//            for ($i = 0; $i < count($dd); $i ++) {//dd($dd);
+//                //Excel_Project::firstOrCreate($dd[$i]);
+////                foreach ($dd[$i] as $key => $value){//dd($value);
+////                    yield $value;
+//                    $date[] = [
+//                        'Heading_1' =>$dd[$i]['Heading_1'],
+//                        'Heading_2' =>$dd[$i]['Heading_2'],
+//                        'Category'=>$dd[$i]['Category'],
+//                        'Manufacturer' => $dd[$i]['Manufacturer'],
+//                        'Name' =>$dd[$i]['Name'],
+//                        'Model_number' =>$dd[$i]['Model_number'],
+//                        'Text' =>$dd[$i]['Text'],
+//                        'Price' => $dd[$i]['Price'],
+//                        'Guarantee' =>$dd[$i]['Guarantee'],
+//                        'Availability' =>$dd[$i]['Availability'],
+//                        'Other' =>$dd[$i]['']];
+//
+//
+//            //}
+//            DB::table('excel_project')->insert($date);
+//            }dd($date);
 
 
 //        {
@@ -164,19 +198,19 @@ class File_ExcelController extends Controller
 
 
 
-        if (view()->exists('index')){
+        if (view()->exists('index_2')){
 
-            return view('index');
+            return view('index_2');
         }
 
     }
 
 
-    private function getLines($file)
-    {
+    private function getLines($file_folder)
+    {//dd($file_folder);
         $header = null;
         $data = [];
-        $handle = @fopen($file, "r");
+        $handle = @fopen($file_folder, "r");
         if ($handle) {
 
             while (($buffer = fgetcsv($handle, 4096, ';')) !== false) {//dd($buffer);
@@ -184,6 +218,7 @@ class File_ExcelController extends Controller
                 if (!$header) {
                     $header = $buffer;
                 } else $data[] = array_combine($header, $buffer);//dd($buffer);
+
 
                 $date[] = [
                     'Heading_1' =>$buffer[0],
@@ -196,15 +231,24 @@ class File_ExcelController extends Controller
                     'Price' => $buffer[7],
                     'Guarantee' =>$buffer[8],
                     'Availability' =>$buffer[9],
-                    'Other' =>$buffer[10]];
+                    'Other' =>$buffer[10]
+                ];
+//                $val = Validator::make($date,[
+//                    'Model_number' =>'unique'
+//                ]);
+//                if ($val->fails()){
+//                    unset($date['Model_number']);//перевірка на дублювання записів і видалення , але поки видал і оригінал і дубль;
+//                }
 
-            }DB::table('excel_project')->insert($date);
+            }//dd($date);
+            DB::table('excel_project')->insert($date);
+
             if (!feof($handle)) {
                 echo "Помилка: fgets() зазнала невдачі\n";
             }
             fclose($handle);
-        }dd($date);//
-        return $data;//
+        }//dd($date);//
+        return $date;//
     }
 
 
